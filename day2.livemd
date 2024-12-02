@@ -1,0 +1,69 @@
+# Day 2
+
+## Part I
+
+```elixir
+input = 
+  System.fetch_env!("LB_AOC_DIR")
+  |> Path.join("data/day2.txt")
+  |> File.read!()
+```
+
+```elixir
+safe? = fn level ->
+  Enum.reduce_while(level, {nil, nil}, fn
+    item, acc ->
+      {item, ""} = Integer.parse(item)
+
+      case acc do
+        {nil, nil} ->
+          {:cont, {item, nil}}
+
+        {prev, nil} ->
+          diff = abs(item - prev)
+
+          if diff >= 1 && diff <= 3 do
+            {:cont, {item, if(item > prev, do: :asc, else: :desc)}}
+          else
+            {:halt, false}
+          end
+
+        {prev, dir} ->
+          diff = abs(item - prev)
+          new_dir = if(item > prev, do: :asc, else: :desc)
+
+          if diff >= 1 && diff <= 3 && new_dir == dir do
+            {:cont, {item, dir}}
+          else
+            {:halt, false}
+          end
+      end
+  end)
+end
+```
+
+```elixir
+for level <- String.split(input, "\n"),
+    level != "",
+    String.split(level)
+    |> safe?.(),
+    reduce: 0 do
+  sum ->
+    sum + 1
+end
+```
+
+## Part II
+
+```elixir
+for level <- String.split(input, "\n"),
+    level != "",
+    level = String.split(level),
+      Enum.any?(0..length(level), fn index ->
+        safe?.(List.delete_at(level, index))
+      end),
+    reduce: 0 do
+  sum ->
+    sum + 1
+end
+```

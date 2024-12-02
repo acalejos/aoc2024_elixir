@@ -1,0 +1,52 @@
+# Day 1
+
+## Part I
+
+```elixir
+input = 
+  input = 
+  System.fetch_env!("LB_AOC_DIR")
+  |> Path.join("data/day1.txt")
+  |> File.read!()
+```
+
+```elixir
+{left, right, _which} =
+  input
+  |> String.split()
+  |> Enum.reduce({[], [], :left}, fn
+    item, {left, right, which} ->
+      {item, ""} = item |> String.trim() |> Integer.parse()
+
+      case which do
+        :left ->
+          {[item | left], right, :right}
+
+        :right ->
+          {left, [item | right], :left}
+      end
+  end)
+
+Enum.zip_reduce(Enum.sort(left), Enum.sort(right), 0, fn
+  left, right, acc when left > right ->
+    acc + (left - right)
+
+  left, right, acc when right > left ->
+    acc + (right - left)
+
+  _left, _right, acc ->
+    acc
+end)
+```
+
+## Part II
+
+```elixir
+right_freqs = Enum.frequencies(right)
+
+Enum.reduce(left, 0, fn item, acc ->
+  acc + item * Map.get(right_freqs, item, 0)
+end)
+```
+
+<!-- livebook:{"offset":871,"stamp":{"token":"XCP.MEMCyeTSMVfsmddrATkENmHfh4RBIO99k9fe9gSxKwWLelALCPr9MP0Jyvr5-4k0CTsufM9gAQNGXggU-bqsdd-3bZL9rBbMRqlaPw3oOcVvjw","version":2}} -->
