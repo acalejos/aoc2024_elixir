@@ -51,14 +51,8 @@ defmodule Day1 do
     {left, right} = split_dataset(input)
 
     Enum.zip_reduce(Enum.sort(left), Enum.sort(right), 0, fn
-      left, right, acc when left > right ->
-        acc + (left - right)
-
-      left, right, acc when right > left ->
-        acc + (right - left)
-
-      _left, _right, acc ->
-        acc
+      left, right, acc ->
+        acc + abs(right - left)
     end)
   end
 
@@ -87,7 +81,7 @@ end
 <!-- livebook:{"output":true} -->
 
 ```
-{:module, Day1, <<70, 79, 82, 49, 0, 0, 15, ...>>, {:bench, 1}}
+{:module, Day1, <<70, 79, 82, 49, 0, 0, 14, ...>>, {:bench, 1}}
 ```
 
 ```elixir
@@ -121,12 +115,12 @@ Calculating statistics...
 Formatting results...
 
 Name            ips        average  deviation         median         99th %
-part1        1.99 K      501.40 μs    ±15.08%      484.71 μs      669.72 μs
-part2        1.93 K      518.01 μs    ±10.86%      511.25 μs      687.04 μs
+part1        2.09 K      479.05 μs    ±28.38%      457.88 μs      712.56 μs
+part2        1.94 K      515.46 μs    ±10.03%      515.79 μs      675.96 μs
 
 Comparison:
-part1        1.99 K
-part2        1.93 K - 1.03x slower +16.61 μs
+part1        2.09 K
+part2        1.94 K - 1.08x slower +36.41 μs
 
 Memory usage statistics:
 
@@ -136,7 +130,7 @@ part2       606.94 KB     ±0.00%      606.94 KB      606.94 KB
 
 Comparison:
 part1       744.04 KB
-part2       606.94 KB - 0.82x memory usage -137.10311 KB
+part2       606.94 KB - 0.82x memory usage -137.10366 KB
 ```
 
 <!-- livebook:{"output":true} -->
@@ -180,7 +174,7 @@ part2       606.94 KB - 0.82x memory usage -137.10311 KB
     %Benchee.Scenario{
       name: "part1",
       job_name: "part1",
-      function: #Function<0.58307476/0 in Day1.bench/1>,
+      function: #Function<0.24482852/0 in Day1.bench/1>,
       input_name: :__no_input,
       input: :__no_input,
       before_each: nil,
@@ -190,25 +184,25 @@ part2       606.94 KB - 0.82x memory usage -137.10311 KB
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 501399.7017508654,
-          ips: 1994.4168225630065,
-          std_dev: 75601.31141789384,
-          std_dev_ratio: 0.15078052729967217,
-          std_dev_ips: 300.71922016138683,
-          median: 484708.0,
-          percentiles: %{50 => 484708.0, 99 => 669722.1},
-          mode: 435375,
-          minimum: 398501,
-          maximum: 2533460,
+          average: 479047.29306294647,
+          ips: 2087.476569601659,
+          std_dev: 135934.3719203083,
+          std_dev_ratio: 0.28375981638716125,
+          std_dev_ips: 592.3419681026679,
+          median: 457875.0,
+          percentiles: %{50 => 457875.0, 99 => 712558.6000000001},
+          mode: 433625,
+          minimum: 396834,
+          maximum: 11085338,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 19933
+          sample_size: 20859
         },
-        samples: [605168, 567292, 551166, 551042, 695751, 588459, 588458, 625168, 597542, 556042,
-         625500, 564876, 593125, 603335, 618167, 581793, 613750, 555251, 557750, 606335, 567542,
-         574876, 618833, 584876, 584710, 626250, 587543, 560375, 603459, 554625, 584126, 627583,
-         598043, ...]
+        samples: [571416, 499541, 561751, 516875, 617250, 464417, 464292, 595459, 531875, 533417,
+         542500, 482792, 465167, 498500, 465292, 463708, 519250, 498458, 463918, 500125, 463916,
+         462250, 499125, 462501, 461959, 509250, 476208, 541625, 564501, 483084, 481792, 588542,
+         552250, ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -225,7 +219,7 @@ part2       606.94 KB - 0.82x memory usage -137.10311 KB
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 3510
+          sample_size: 3117
         },
         samples: [761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896,
          761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896,
@@ -255,7 +249,7 @@ part2       606.94 KB - 0.82x memory usage -137.10311 KB
     %Benchee.Scenario{
       name: "part2",
       job_name: "part2",
-      function: #Function<1.58307476/0 in Day1.bench/1>,
+      function: #Function<1.24482852/0 in Day1.bench/1>,
       input_name: :__no_input,
       input: :__no_input,
       before_each: nil,
@@ -265,45 +259,45 @@ part2       606.94 KB - 0.82x memory usage -137.10311 KB
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 518012.7665319237,
-          ips: 1930.4543528820013,
-          std_dev: 56272.157970065535,
-          std_dev_ratio: 0.1086308322993766,
-          std_dev_ips: 209.70686306952626,
-          median: 511250.5,
-          percentiles: %{50 => 511250.5, 99 => 687044.5199999999},
-          mode: [506042, 530834, 505042, 506542, 497500, 532459, 535042],
-          minimum: 419583,
-          maximum: 2220794,
-          relative_more: 1.0331333758736718,
-          relative_less: 0.9679292367786952,
-          absolute_difference: 16613.064781058347,
-          sample_size: 19296
+          average: 515458.31554249173,
+          ips: 1940.0210838534142,
+          std_dev: 51709.99708720266,
+          std_dev_ratio: 0.1003184845951718,
+          std_dev_ips: 194.61997521485722,
+          median: 515791.0,
+          percentiles: %{50 => 515791.0, 99 => 675963.88},
+          mode: 529625,
+          minimum: 418626,
+          maximum: 828459,
+          relative_more: 1.07600715630129,
+          relative_less: 0.9293618487050216,
+          absolute_difference: 36411.02247954527,
+          sample_size: 19392
         },
-        samples: [563542, 584001, 539000, 549751, 558916, 546751, 538750, 567251, 526334, 572918,
-         591500, 528210, 536542, 578917, 524750, 540293, 584000, 527000, 537126, 568708, 525001,
-         537375, 568584, 547167, 535668, 574625, 544168, 538792, 581085, 527792, 543126, 573708,
+        samples: [579292, 556958, 530375, 536667, 544751, 535208, 534083, 546791, 523708, 534418,
+         566750, 521833, 530667, 558460, 521166, 534167, 562667, 526042, 535209, 586583, 524750,
+         531166, 559250, 521460, 532959, 562667, 522416, 531667, 564460, 522417, 531583, 580458,
          ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 621502.4146187776,
+          average: 621501.8539642745,
           ips: nil,
-          std_dev: 8.50987749791611,
-          std_dev_ratio: 1.3692428698182886e-5,
+          std_dev: 13.550693713250404,
+          std_dev_ratio: 2.180314286565158e-5,
           std_dev_ips: nil,
           median: 621504.0,
           percentiles: %{50 => 621504.0, 99 => 621504.0},
           mode: 621504,
           minimum: 621464,
           maximum: 621680,
-          relative_more: 0.8157313000970967,
-          relative_less: 1.225893869563384,
-          absolute_difference: -140393.58538122242,
-          sample_size: 3174
+          relative_more: 0.815730564229599,
+          relative_less: 1.225894975437669,
+          absolute_difference: -140394.14603572548,
+          sample_size: 3191
         },
-        samples: [621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504,
-         621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504,
+        samples: [621504, 621464, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504,
+         621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621464, 621504, 621504,
          621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, ...]
       },
       reductions_data: %Benchee.CollectionData{
@@ -330,4 +324,4 @@ part2       606.94 KB - 0.82x memory usage -137.10311 KB
 }
 ```
 
-<!-- livebook:{"offset":8967,"stamp":{"token":"XCP.QrxnP9Dc_75_awKvbgsI1GGJuxjUI1l_WfqDT22VYzYr5kSS6bc1Kb8QzKsAILQyL-nlaoLjjxWoRLHE3i-ZrGS_GHHXkS0PLtXo0a3bMqNg3Q","version":2}} -->
+<!-- livebook:{"offset":8785,"stamp":{"token":"XCP.Rv3fgBNGu1QQhph1PrIiIvTr-AEDrye8kfDf_TprP0-J6JHGFO4eudVG4RlpfA9eRAezhcrL0RQzm94bPTHGU11x_g1LJ5-juvOuVOJ9fEDTcg","version":2}} -->
