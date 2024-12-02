@@ -1,52 +1,333 @@
 # Day 1
 
-## Part I
+```elixir
+Mix.install([
+  {:benchee, "~> 1.3"}
+])
+```
+
+## Setup
 
 ```elixir
-input = 
-  input = 
+input =
+  input =
   System.fetch_env!("LB_AOC_DIR")
   |> Path.join("data/day1.txt")
   |> File.read!()
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+## Solve
+
+```elixir
+defmodule Day1 do
+  def split_dataset(input) do
+    {left, right, _which} =
+      input
+      |> String.split()
+      |> Enum.reduce({[], [], :left}, fn
+        item, {left, right, which} ->
+          {item, ""} = item |> String.trim() |> Integer.parse()
+
+          case which do
+            :left ->
+              {[item | left], right, :right}
+
+            :right ->
+              {left, [item | right], :left}
+          end
+      end)
+
+    {left, right}
+  end
+
+  def part1(input) do
+    {left, right} = split_dataset(input)
+
+    Enum.zip_reduce(Enum.sort(left), Enum.sort(right), 0, fn
+      left, right, acc when left > right ->
+        acc + (left - right)
+
+      left, right, acc when right > left ->
+        acc + (right - left)
+
+      _left, _right, acc ->
+        acc
+    end)
+  end
+
+  def part2(input) do
+    {left, right} = split_dataset(input)
+    right_freqs = Enum.frequencies(right)
+
+    Enum.reduce(left, 0, fn item, acc ->
+      acc + item * Map.get(right_freqs, item, 0)
+    end)
+  end
+
+  def bench(input) do
+    Benchee.run(
+      %{
+        "part1" => fn -> part1(input) end,
+        "part2" => fn -> part2(input) end
+      },
+      time: 10,
+      memory_time: 2
+    )
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Day1, <<70, 79, 82, 49, 0, 0, 15, ...>>, {:bench, 1}}
 ```
 
 ```elixir
-{left, right, _which} =
-  input
-  |> String.split()
-  |> Enum.reduce({[], [], :left}, fn
-    item, {left, right, which} ->
-      {item, ""} = item |> String.trim() |> Integer.parse()
-
-      case which do
-        :left ->
-          {[item | left], right, :right}
-
-        :right ->
-          {left, [item | right], :left}
-      end
-  end)
-
-Enum.zip_reduce(Enum.sort(left), Enum.sort(right), 0, fn
-  left, right, acc when left > right ->
-    acc + (left - right)
-
-  left, right, acc when right > left ->
-    acc + (right - left)
-
-  _left, _right, acc ->
-    acc
-end)
+Day1.bench(input)
 ```
 
-## Part II
+<!-- livebook:{"output":true} -->
 
-```elixir
-right_freqs = Enum.frequencies(right)
+```
+Error trying to determine erlang version enoent, falling back to overall OTP version
+Operating System: macOS
+CPU Information: Apple M1 Max
+Number of Available Cores: 10
+Available memory: 32 GB
+Elixir 1.17.2
+Erlang 27
+JIT enabled: true
 
-Enum.reduce(left, 0, fn item, acc ->
-  acc + item * Map.get(right_freqs, item, 0)
-end)
+Benchmark suite executing with the following configuration:
+warmup: 2 s
+time: 10 s
+memory time: 2 s
+reduction time: 0 ns
+parallel: 1
+inputs: none specified
+Estimated total run time: 28 s
+
+Benchmarking part1 ...
+Benchmarking part2 ...
+Calculating statistics...
+Formatting results...
+
+Name            ips        average  deviation         median         99th %
+part1        1.99 K      501.40 μs    ±15.08%      484.71 μs      669.72 μs
+part2        1.93 K      518.01 μs    ±10.86%      511.25 μs      687.04 μs
+
+Comparison:
+part1        1.99 K
+part2        1.93 K - 1.03x slower +16.61 μs
+
+Memory usage statistics:
+
+Name          average  deviation         median         99th %
+part1       744.04 KB     ±0.00%      744.04 KB      744.04 KB
+part2       606.94 KB     ±0.00%      606.94 KB      606.94 KB
+
+Comparison:
+part1       744.04 KB
+part2       606.94 KB - 0.82x memory usage -137.10311 KB
 ```
 
-<!-- livebook:{"offset":871,"stamp":{"token":"XCP.MEMCyeTSMVfsmddrATkENmHfh4RBIO99k9fe9gSxKwWLelALCPr9MP0Jyvr5-4k0CTsufM9gAQNGXggU-bqsdd-3bZL9rBbMRqlaPw3oOcVvjw","version":2}} -->
+<!-- livebook:{"output":true} -->
+
+```
+%Benchee.Suite{
+  system: %Benchee.System{
+    elixir: "1.17.2",
+    erlang: "27",
+    jit_enabled?: true,
+    num_cores: 10,
+    os: :macOS,
+    available_memory: "32 GB",
+    cpu_speed: "Apple M1 Max"
+  },
+  configuration: %Benchee.Configuration{
+    parallel: 1,
+    time: 10000000000.0,
+    warmup: 2000000000.0,
+    memory_time: 2000000000.0,
+    reduction_time: 0.0,
+    pre_check: false,
+    formatters: [Benchee.Formatters.Console],
+    percentiles: ~c"2c",
+    print: %{configuration: true, benchmarking: true, fast_warning: true},
+    inputs: nil,
+    input_names: [],
+    save: false,
+    load: false,
+    unit_scaling: :best,
+    assigns: %{},
+    before_each: nil,
+    after_each: nil,
+    before_scenario: nil,
+    after_scenario: nil,
+    measure_function_call_overhead: false,
+    title: nil,
+    profile_after: false
+  },
+  scenarios: [
+    %Benchee.Scenario{
+      name: "part1",
+      job_name: "part1",
+      function: #Function<0.58307476/0 in Day1.bench/1>,
+      input_name: :__no_input,
+      input: :__no_input,
+      before_each: nil,
+      after_each: nil,
+      before_scenario: nil,
+      after_scenario: nil,
+      tag: nil,
+      run_time_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 501399.7017508654,
+          ips: 1994.4168225630065,
+          std_dev: 75601.31141789384,
+          std_dev_ratio: 0.15078052729967217,
+          std_dev_ips: 300.71922016138683,
+          median: 484708.0,
+          percentiles: %{50 => 484708.0, 99 => 669722.1},
+          mode: 435375,
+          minimum: 398501,
+          maximum: 2533460,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 19933
+        },
+        samples: [605168, 567292, 551166, 551042, 695751, 588459, 588458, 625168, 597542, 556042,
+         625500, 564876, 593125, 603335, 618167, 581793, 613750, 555251, 557750, 606335, 567542,
+         574876, 618833, 584876, 584710, 626250, 587543, 560375, 603459, 554625, 584126, 627583,
+         598043, ...]
+      },
+      memory_usage_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 761896.0,
+          ips: nil,
+          std_dev: 0.0,
+          std_dev_ratio: 0.0,
+          std_dev_ips: nil,
+          median: 761896.0,
+          percentiles: %{50 => 761896.0, 99 => 761896.0},
+          mode: 761896,
+          minimum: 761896,
+          maximum: 761896,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 3510
+        },
+        samples: [761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896,
+         761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896,
+         761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896, 761896,
+         ...]
+      },
+      reductions_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      }
+    },
+    %Benchee.Scenario{
+      name: "part2",
+      job_name: "part2",
+      function: #Function<1.58307476/0 in Day1.bench/1>,
+      input_name: :__no_input,
+      input: :__no_input,
+      before_each: nil,
+      after_each: nil,
+      before_scenario: nil,
+      after_scenario: nil,
+      tag: nil,
+      run_time_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 518012.7665319237,
+          ips: 1930.4543528820013,
+          std_dev: 56272.157970065535,
+          std_dev_ratio: 0.1086308322993766,
+          std_dev_ips: 209.70686306952626,
+          median: 511250.5,
+          percentiles: %{50 => 511250.5, 99 => 687044.5199999999},
+          mode: [506042, 530834, 505042, 506542, 497500, 532459, 535042],
+          minimum: 419583,
+          maximum: 2220794,
+          relative_more: 1.0331333758736718,
+          relative_less: 0.9679292367786952,
+          absolute_difference: 16613.064781058347,
+          sample_size: 19296
+        },
+        samples: [563542, 584001, 539000, 549751, 558916, 546751, 538750, 567251, 526334, 572918,
+         591500, 528210, 536542, 578917, 524750, 540293, 584000, 527000, 537126, 568708, 525001,
+         537375, 568584, 547167, 535668, 574625, 544168, 538792, 581085, 527792, 543126, 573708,
+         ...]
+      },
+      memory_usage_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 621502.4146187776,
+          ips: nil,
+          std_dev: 8.50987749791611,
+          std_dev_ratio: 1.3692428698182886e-5,
+          std_dev_ips: nil,
+          median: 621504.0,
+          percentiles: %{50 => 621504.0, 99 => 621504.0},
+          mode: 621504,
+          minimum: 621464,
+          maximum: 621680,
+          relative_more: 0.8157313000970967,
+          relative_less: 1.225893869563384,
+          absolute_difference: -140393.58538122242,
+          sample_size: 3174
+        },
+        samples: [621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504,
+         621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504,
+         621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, 621504, ...]
+      },
+      reductions_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      }
+    }
+  ]
+}
+```
+
+<!-- livebook:{"offset":8967,"stamp":{"token":"XCP.QrxnP9Dc_75_awKvbgsI1GGJuxjUI1l_WfqDT22VYzYr5kSS6bc1Kb8QzKsAILQyL-nlaoLjjxWoRLHE3i-ZrGS_GHHXkS0PLtXo0a3bMqNg3Q","version":2}} -->
