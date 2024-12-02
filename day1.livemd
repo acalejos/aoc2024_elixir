@@ -10,7 +10,6 @@ Mix.install([
 
 ```elixir
 input =
-  input =
   System.fetch_env!("LB_AOC_DIR")
   |> Path.join("data/day1.txt")
   |> File.read!()
