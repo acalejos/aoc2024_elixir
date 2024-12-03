@@ -1,0 +1,332 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 3
+
+```elixir
+Mix.install([
+  {:benchee, "~> 1.3"}
+])
+```
+
+## Setup
+
+```elixir
+input =
+  System.fetch_env!("LB_AOC_DIR")
+  |> Path.join("data/day3.txt")
+  |> File.read!()
+
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+## Solve
+
+```elixir
+defmodule Day3 do
+  @part1_pattern ~r/mul\((\d{1,3}),(\d{1,3})\)/
+  @doc """
+  iex> Day3.part1("xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))")
+  161
+  """
+  def part1(input) do
+    @part1_pattern
+    |> Regex.scan(input, capture: :all_but_first)
+    |> Enum.reduce(0, fn [left, right], acc ->
+      String.to_integer(left) * String.to_integer(right) + acc
+    end)
+  end
+
+  @part2_pattern ~r/(mul\((?P<left>\d{1,3}),(?P<right>\d{1,3})\))|(?P<do>do\(\))|(?P<dont>don't\(\))/
+  @doc """
+  iex> Day3.part2("xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))")
+  48
+  """
+  def part2(input) do
+    @part2_pattern
+    |> Regex.scan(input, capture: :all_names)
+    |> Enum.reduce({0, true}, fn
+      group, {acc, active?} ->
+        group = Enum.filter(group, fn item -> String.trim(item) != "" end)
+
+        case group do
+          [left, right] ->
+            if active? do
+              {acc + String.to_integer(left) * String.to_integer(right), active?}
+            else
+              {acc, active?}
+            end
+
+          ["do()"] ->
+            {acc, true}
+
+          ["don't()"] ->
+            {acc, false}
+        end
+    end)
+    |> elem(0)
+  end
+
+  def bench(input) do
+    Benchee.run(
+      %{
+        "part1" => fn -> part1(input) end,
+        "part2" => fn -> part2(input) end
+      },
+      time: 10,
+      memory_time: 2
+    )
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Day3, <<70, 79, 82, 49, 0, 0, 17, ...>>, {:bench, 1}}
+```
+
+```elixir
+Day3.bench(input)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+Error trying to determine erlang version enoent, falling back to overall OTP version
+Operating System: macOS
+CPU Information: Apple M1 Max
+Number of Available Cores: 10
+Available memory: 32 GB
+Elixir 1.17.2
+Erlang 27
+JIT enabled: true
+
+Benchmark suite executing with the following configuration:
+warmup: 2 s
+time: 10 s
+memory time: 2 s
+reduction time: 0 ns
+parallel: 1
+inputs: none specified
+Estimated total run time: 28 s
+
+Benchmarking part1 ...
+Benchmarking part2 ...
+Calculating statistics...
+Formatting results...
+
+Name            ips        average  deviation         median         99th %
+part1        2.47 K        0.40 ms    ±13.12%        0.40 ms        0.45 ms
+part2        0.67 K        1.50 ms     ±3.88%        1.49 ms        1.64 ms
+
+Comparison: 
+part1        2.47 K
+part2        0.67 K - 3.70x slower +1.09 ms
+
+Memory usage statistics:
+
+Name     Memory usage
+part1       269.15 KB
+part2       711.11 KB - 2.64x memory usage +441.96 KB
+
+**All measurements for memory usage were the same**
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%Benchee.Suite{
+  system: %Benchee.System{
+    elixir: "1.17.2",
+    erlang: "27",
+    jit_enabled?: true,
+    num_cores: 10,
+    os: :macOS,
+    available_memory: "32 GB",
+    cpu_speed: "Apple M1 Max"
+  },
+  configuration: %Benchee.Configuration{
+    parallel: 1,
+    time: 10000000000.0,
+    warmup: 2000000000.0,
+    memory_time: 2000000000.0,
+    reduction_time: 0.0,
+    pre_check: false,
+    formatters: [Benchee.Formatters.Console],
+    percentiles: ~c"2c",
+    print: %{configuration: true, benchmarking: true, fast_warning: true},
+    inputs: nil,
+    input_names: [],
+    save: false,
+    load: false,
+    unit_scaling: :best,
+    assigns: %{},
+    before_each: nil,
+    after_each: nil,
+    before_scenario: nil,
+    after_scenario: nil,
+    measure_function_call_overhead: false,
+    title: nil,
+    profile_after: false
+  },
+  scenarios: [
+    %Benchee.Scenario{
+      name: "part1",
+      job_name: "part1",
+      function: #Function<0.72196230/0 in Day3.bench/1>,
+      input_name: :__no_input,
+      input: :__no_input,
+      before_each: nil,
+      after_each: nil,
+      before_scenario: nil,
+      after_scenario: nil,
+      tag: nil,
+      run_time_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 404528.9985023881,
+          ips: 2472.010668461625,
+          std_dev: 53083.25329029331,
+          std_dev_ratio: 0.1312223684502557,
+          std_dev_ips: 324.38309474983424,
+          median: 399417.0,
+          percentiles: %{50 => 399417.0, 99 => 447205.13},
+          mode: 399125,
+          minimum: 395500,
+          maximum: 4595295,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 24706
+        },
+        samples: [509625, 448126, 427708, 450250, 420292, 421250, 405083, 438418, 404625, 395500,
+         399417, 398793, 409875, 411750, 399251, 399125, 398916, 399500, 399210, 407334, 399125,
+         399543, 398917, 399292, 402209, 412543, 399000, 399375, 400376, 399333, 399291, 399125,
+         401793, ...]
+      },
+      memory_usage_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 275608.0,
+          ips: nil,
+          std_dev: 0.0,
+          std_dev_ratio: 0.0,
+          std_dev_ips: nil,
+          median: 275608.0,
+          percentiles: %{50 => 275608.0, 99 => 275608.0},
+          mode: 275608,
+          minimum: 275608,
+          maximum: 275608,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 3649
+        },
+        samples: [275608, 275608, 275608, 275608, 275608, 275608, 275608, 275608, 275608, 275608,
+         275608, 275608, 275608, 275608, 275608, 275608, 275608, 275608, 275608, 275608, 275608,
+         275608, 275608, 275608, 275608, 275608, 275608, 275608, 275608, 275608, 275608, 275608,
+         ...]
+      },
+      reductions_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      }
+    },
+    %Benchee.Scenario{
+      name: "part2",
+      job_name: "part2",
+      function: #Function<1.72196230/0 in Day3.bench/1>,
+      input_name: :__no_input,
+      input: :__no_input,
+      before_each: nil,
+      after_each: nil,
+      before_scenario: nil,
+      after_scenario: nil,
+      tag: nil,
+      run_time_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 1495214.4404067593,
+          ips: 668.8003894130123,
+          std_dev: 58059.7297822533,
+          std_dev_ratio: 0.03883036988758528,
+          std_dev_ips: 25.969766501868342,
+          median: 1485001.0,
+          percentiles: %{50 => 1485001.0, 99 => 1641881.04},
+          mode: 1437376,
+          minimum: 1425335,
+          maximum: 3516712,
+          relative_more: 3.6961860483233875,
+          relative_less: 0.270549151727253,
+          absolute_difference: 1090685.4419043711,
+          sample_size: 6687
+        },
+        samples: [1604792, 1509168, 1473793, 1465460, 1521917, 1505293, 1460001, 1551918, 1493168,
+         1536210, 1483084, 1568584, 1547459, 1498709, 1502376, 1483751, 1522376, 1531001, 1470710,
+         1547126, 1493834, 1568460, 1528794, 1477585, 1547084, 1498001, 1545251, 1516168, 1518543,
+         1485251, 1538793, 1485501, ...]
+      },
+      memory_usage_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: 728176.0,
+          ips: nil,
+          std_dev: 0.0,
+          std_dev_ratio: 0.0,
+          std_dev_ips: nil,
+          median: 728176.0,
+          percentiles: %{50 => 728176.0, 99 => 728176.0},
+          mode: 728176,
+          minimum: 728176,
+          maximum: 728176,
+          relative_more: 2.642071347711242,
+          relative_less: 0.3784909142844587,
+          absolute_difference: 452568.0,
+          sample_size: 1225
+        },
+        samples: [728176, 728176, 728176, 728176, 728176, 728176, 728176, 728176, 728176, 728176,
+         728176, 728176, 728176, 728176, 728176, 728176, 728176, 728176, 728176, 728176, 728176,
+         728176, 728176, 728176, 728176, 728176, 728176, 728176, 728176, 728176, 728176, ...]
+      },
+      reductions_data: %Benchee.CollectionData{
+        statistics: %Benchee.Statistics{
+          average: nil,
+          ips: nil,
+          std_dev: nil,
+          std_dev_ratio: nil,
+          std_dev_ips: nil,
+          median: nil,
+          percentiles: nil,
+          mode: nil,
+          minimum: nil,
+          maximum: nil,
+          relative_more: nil,
+          relative_less: nil,
+          absolute_difference: nil,
+          sample_size: 0
+        },
+        samples: []
+      }
+    }
+  ]
+}
+```
+
+<!-- livebook:{"offset":8983,"stamp":{"token":"XCP.g_UHHGyseje69AiaLn6mjVUaAveNrHScMfI6b2Yw7KoWQO5WGlvZImUmaG2Z9Ihz9BEC1lNPknAOE3uWva52dkq_mcbDITZ8aY31WRjaO5b-Hqr4M1Q","version":2}} -->
