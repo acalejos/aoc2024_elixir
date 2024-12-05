@@ -52,23 +52,6 @@ defmodule Day5 do
     {instructions, pages}
   end
 
-  def is_ordered?(line, instructions) do
-    Enum.reduce_while(line, MapSet.new(), fn
-      current, seen ->
-        cant_be_before =
-          MapSet.filter(instructions, fn
-            [^current, _other] -> true
-            _other -> false
-          end)
-
-        if Enum.any?(cant_be_before, fn [^current, c] -> MapSet.member?(seen, c) end) do
-          {:halt, false}
-        else
-          {:cont, MapSet.put(seen, current)}
-        end
-    end)
-  end
-
   @doc ~S"""
   iex> Day5.part1("47|53\n97|13\n97|61\n97|47\n75|29\n61|13\n75|53\n29|13\n97|29\n53|29\n61|53\n97|53\n61|29\n47|13\n75|47\n97|75\n47|61\n75|61\n47|29\n75|13\n53|13\n\n75,47,61,53,29\n97,61,53,29,13\n75,29,13\n75,97,47,61,53\n61,13,29\n97,13,75,29,47\n")
   143
@@ -78,7 +61,9 @@ defmodule Day5 do
 
     for page <- pages, reduce: 0 do
       sum ->
-        if is_ordered?(page, instructions) do
+        reordered = Enum.sort(page, &MapSet.member?(instructions, [&1, &2]))
+
+        if reordered == page do
           middle = floor(length(page) / 2)
           sum + Enum.at(page, middle)
         else
@@ -96,10 +81,11 @@ defmodule Day5 do
 
     for page <- pages, reduce: 0 do
       sum ->
-        if is_ordered?(page, instructions) do
+        reordered = Enum.sort(page, &MapSet.member?(instructions, [&1, &2]))
+
+        if reordered == page do
           sum
         else
-          reordered = Enum.sort(page, &MapSet.member?(instructions, [&1, &2]))
           middle = floor(length(reordered) / 2)
           sum + Enum.at(reordered, middle)
         end
@@ -122,7 +108,7 @@ end
 <!-- livebook:{"output":true} -->
 
 ```
-{:module, Day5, <<70, 79, 82, 49, 0, 0, 22, ...>>, {:bench, 1}}
+{:module, Day5, <<70, 79, 82, 49, 0, 0, 18, ...>>, {:bench, 1}}
 ```
 
 ```elixir
@@ -156,22 +142,22 @@ Calculating statistics...
 Formatting results...
 
 Name            ips        average  deviation         median         99th %
-part1         36.68       27.26 ms     ±3.08%       27.02 ms       32.38 ms
-part2         35.03       28.55 ms    ±20.22%       26.99 ms       55.27 ms
+part1        1.05 K      951.94 μs    ±11.95%      928.92 μs     1141.02 μs
+part2        1.05 K      955.29 μs    ±18.72%      929.38 μs     1134.73 μs
 
 Comparison: 
-part1         36.68
-part2         35.03 - 1.05x slower +1.29 ms
+part1        1.05 K
+part2        1.05 K - 1.00x slower +3.36 μs
 
 Memory usage statistics:
 
 Name          average  deviation         median         99th %
-part1        44.22 MB     ±0.00%       44.22 MB       44.22 MB
-part2        44.60 MB     ±0.00%       44.60 MB       44.60 MB
+part1       722.37 KB     ±0.00%      722.37 KB      722.41 KB
+part2       722.61 KB     ±0.00%      722.60 KB      722.65 KB
 
 Comparison: 
-part1        44.22 MB
-part2        44.60 MB - 1.01x memory usage +0.38 MB
+part1       722.37 KB
+part2       722.61 KB - 1.00x memory usage +0.23 KB
 ```
 
 <!-- livebook:{"output":true} -->
@@ -215,7 +201,7 @@ part2        44.60 MB - 1.01x memory usage +0.38 MB
     %Benchee.Scenario{
       name: "part1",
       job_name: "part1",
-      function: #Function<0.80319387/0 in Day5.bench/1>,
+      function: #Function<0.96581357/0 in Day5.bench/1>,
       input_name: :__no_input,
       input: :__no_input,
       before_each: nil,
@@ -225,47 +211,47 @@ part2        44.60 MB - 1.01x memory usage +0.38 MB
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 27262136.76839237,
-          ips: 36.680910542544,
-          std_dev: 838688.9430910996,
-          std_dev_ratio: 0.0307638740945454,
-          std_dev_ips: 1.1284469136041064,
-          median: 27019809.0,
-          percentiles: %{50 => 27019809.0, 99 => 32383583.799999997},
-          mode: 26958476,
-          minimum: 26728060,
-          maximum: 35242331,
+          average: 951935.9977145034,
+          ips: 1050.4907918188756,
+          std_dev: 113779.55023414688,
+          std_dev_ratio: 0.11952436981826449,
+          std_dev_ips: 125.55924989204077,
+          median: 928923.0,
+          percentiles: %{50 => 928923.0, 99 => 1141021.6599999995},
+          mode: 914257,
+          minimum: 869340,
+          maximum: 5411247,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 367
+          sample_size: 10501
         },
-        samples: [31920464, 32601296, 27625682, 27433684, 28059514, 28151057, 33624959, 28138265,
-         27835766, 27475391, 27449433, 27035975, 27138226, 30168551, 27202975, 27085809, 27783183,
-         27074977, 26981309, 26850976, 26958476, 26922934, 26973269, 27065184, 26879518, 26932518,
-         26904226, 27042892, 27473808, 27411559, 27994514, 27784558, 27989724, ...]
+        samples: [1056758, 955257, 991423, 938757, 1022799, 955215, 936090, 968090, 937632, 954091,
+         916382, 915506, 913382, 911590, 978590, 1088508, 1003257, 925799, 972340, 929174, 1007174,
+         940965, 1184925, 997842, 1134841, 1063758, 1045507, 959965, 1031091, 1074592, 1420844,
+         964007, 1030092, ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 46369179.93442623,
+          average: 739707.9061032864,
           ips: nil,
-          std_dev: 13.27638109885247,
-          std_dev_ratio: 2.8631908344351767e-7,
+          std_dev: 13.127269633597354,
+          std_dev_ratio: 1.774655850679035e-5,
           std_dev_ips: nil,
-          median: 46369176.0,
-          percentiles: %{50 => 46369176.0, 99 => 46369224.0},
-          mode: 46369176,
-          minimum: 46369176,
-          maximum: 46369224,
+          median: 739704.0,
+          percentiles: %{50 => 739704.0, 99 => 739752.0},
+          mode: 739704,
+          minimum: 739704,
+          maximum: 739752,
           relative_more: nil,
           relative_less: nil,
           absolute_difference: nil,
-          sample_size: 61
+          sample_size: 1917
         },
-        samples: [46369176, 46369176, 46369176, 46369176, 46369176, 46369176, 46369176, 46369176,
-         46369176, 46369224, 46369176, 46369176, 46369176, 46369176, 46369176, 46369176, 46369176,
-         46369176, 46369176, 46369176, 46369176, 46369176, 46369176, 46369176, 46369176, 46369176,
-         46369176, 46369176, 46369176, 46369176, 46369176, 46369176, ...]
+        samples: [739704, 739704, 739704, 739704, 739704, 739704, 739704, 739704, 739704, 739704,
+         739704, 739752, 739704, 739704, 739752, 739704, 739704, 739704, 739704, 739704, 739752,
+         739704, 739704, 739704, 739752, 739704, 739704, 739704, 739704, 739704, 739752, 739704,
+         ...]
       },
       reductions_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -290,7 +276,7 @@ part2        44.60 MB - 1.01x memory usage +0.38 MB
     %Benchee.Scenario{
       name: "part2",
       job_name: "part2",
-      function: #Function<1.80319387/0 in Day5.bench/1>,
+      function: #Function<1.96581357/0 in Day5.bench/1>,
       input_name: :__no_input,
       input: :__no_input,
       before_each: nil,
@@ -300,47 +286,46 @@ part2        44.60 MB - 1.01x memory usage +0.38 MB
       tag: nil,
       run_time_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 28548486.62962963,
-          ips: 35.028126463352685,
-          std_dev: 5773307.659911791,
-          std_dev_ratio: 0.20222815082323298,
-          std_dev_ips: 7.083673241486165,
-          median: 26989310.0,
-          percentiles: %{50 => 26989310.0, 99 => 55270669.160000004},
-          mode: nil,
-          minimum: 26614560,
-          maximum: 55584947,
-          relative_more: 1.047184484186458,
-          relative_less: 0.954941574384465,
-          absolute_difference: 1286349.8612372614,
-          sample_size: 351
+          average: 955294.3271858576,
+          ips: 1046.7977999469945,
+          std_dev: 178817.49346367034,
+          std_dev_ratio: 0.18718575874980617,
+          std_dev_ips: 195.94564044070597,
+          median: 929382.0,
+          percentiles: %{50 => 929382.0, 99 => 1134730.78},
+          mode: 897048,
+          minimum: 871006,
+          maximum: 9666529,
+          relative_more: 1.0035278941855514,
+          relative_less: 0.9964845080978894,
+          absolute_difference: 3358.32947135414,
+          sample_size: 10465
         },
-        samples: [31328674, 31362007, 31212341, 32216546, 32143381, 31708590, 26972767, 26920018,
-         26841101, 26710644, 26813144, 26852059, 26907685, 26927684, 26860352, 26818393, 26812393,
-         26951643, 28439097, 27560600, 27390934, 27174641, 26914435, 26869809, 26921310, 26935351,
-         26726435, 26989310, 26791143, 26807851, 26766893, 26883892, ...]
+        samples: [1070466, 935548, 1003007, 973548, 970465, 971257, 976090, 998175, 942673, 967799,
+         919132, 912632, 921173, 920966, 985215, 942549, 964632, 947716, 903215, 927214, 911132,
+         989924, 942090, 954132, 931757, 915174, 911923, 954882, 983716, 945715, 956424, 915965,
+         ...]
       },
       memory_usage_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
-          average: 46769242.44067796,
+          average: 739947.9979434448,
           ips: nil,
-          std_dev: 10.63545013304267,
-          std_dev_ratio: 2.2740265991121536e-7,
+          std_dev: 13.266809195171335,
+          std_dev_ratio: 1.7929380486255923e-5,
           std_dev_ips: nil,
-          median: 46769240.0,
-          percentiles: %{50 => 46769240.0, 99 => 46769288.0},
-          mode: 46769240,
-          minimum: 46769240,
-          maximum: 46769288,
-          relative_more: 1.0086277675563269,
-          relative_less: 0.9914460340733727,
-          absolute_difference: 400062.50625173,
-          sample_size: 59
+          median: 739944.0,
+          percentiles: %{50 => 739944.0, 99 => 739992.0},
+          mode: 739944,
+          minimum: 739944,
+          maximum: 739992,
+          relative_more: 1.0003245765499833,
+          relative_less: 0.9996755287657705,
+          absolute_difference: 240.09184015833307,
+          sample_size: 1945
         },
-        samples: [46769240, 46769288, 46769240, 46769288, 46769240, 46769240, 46769240, 46769240,
-         46769240, 46769240, 46769240, 46769240, 46769240, 46769240, 46769240, 46769240, 46769240,
-         46769240, 46769240, 46769240, 46769240, 46769240, 46769240, 46769240, 46769240, 46769240,
-         46769240, 46769240, 46769240, 46769240, 46769240, ...]
+        samples: [739944, 739944, 739944, 739944, 739944, 739944, 739944, 739944, 739944, 739944,
+         739944, 739992, 739992, 739944, 739944, 739944, 739944, 739992, 739944, 739944, 739992,
+         739944, 739944, 739944, 739944, 739944, 739944, 739944, 739944, 739944, 739944, ...]
       },
       reductions_data: %Benchee.CollectionData{
         statistics: %Benchee.Statistics{
@@ -366,4 +351,4 @@ part2        44.60 MB - 1.01x memory usage +0.38 MB
 }
 ```
 
-<!-- livebook:{"offset":10489,"stamp":{"token":"XCP.JJj1d2L1cqRJ1sc-qO0_M_GC_8EdNFJqVhqYsmQeWoDA4wCrftcLjx7EG1mpkvhdjXYM8371Znpfl0hid6IOgEPnjHc5OZUDDCKrkLJzbeRgJkq9ZNfQdeWv2Zg5LILkUKE","version":2}} -->
+<!-- livebook:{"offset":9811,"stamp":{"token":"XCP.bngf6BhczB_E5qVkNE3IhdpmMhm4ebNGmzAAmxsbfPJPun3Ly4Hwa9Nwr_WBP8C5_b8IJ4dYZUyetT2zJuHJGIoOcMOq3F1ogBlRDu9OBZ0LY7V4EqMaCAwPppLugdD-dio","version":2}} -->
