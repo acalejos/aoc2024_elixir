@@ -1,0 +1,108 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 6
+
+## Setup
+
+```elixir
+input =
+  System.fetch_env!("LB_AOC_DIR")
+  |> Path.join("data/day6.txt")
+  |> File.read!()
+
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+## Solve
+
+```elixir
+defmodule Day6 do
+  defp parse(input) do
+    for {line, i} <- Enum.with_index(String.split(input, "\n")),
+        line != "",
+        {item, j} <- Enum.with_index(String.codepoints(line)),
+        reduce: %{} do
+      acc ->
+        acc = Map.put(acc, {i, j}, item)
+        if item == "^", do: Map.put(acc, :start, {i, j}), else: acc
+    end
+  end
+
+  defp rotate(:up), do: :right
+  defp rotate(:right), do: :down
+  defp rotate(:down), do: :left
+  defp rotate(:left), do: :up
+
+  defp move({i, j}, :left), do: {i, j - 1}
+  defp move({i, j}, :right), do: {i, j + 1}
+  defp move({i, j}, :up), do: {i - 1, j}
+  defp move({i, j}, :down), do: {i + 1, j}
+
+  defp simulate(board) do
+    Stream.unfold({Map.fetch!(board, :start), :up}, fn
+      :halt ->
+        nil
+
+      {position, direction} ->
+        new_position = move(position, direction)
+
+        case Map.get(board, new_position) do
+          "#" ->
+            {nil, {position, rotate(direction)}}
+
+          nop when nop in [".", "^"] ->
+            {position, {new_position, direction}}
+
+          _ ->
+            {position, :halt}
+        end
+    end)
+    |> Stream.filter(& &1)
+  end
+
+  @doc ~S"""
+  iex> Day6.part1("....#.....\n.........#\n..........\n..#.......\n.......#..\n..........\n.#..^.....\n........#.\n#.........\n......#...\n")
+  41
+  """
+  def part1(input) do
+    input
+    |> parse()
+    |> simulate()
+    |> Enum.into(MapSet.new())
+    |> MapSet.size()
+  end
+
+  @doc ~S"""
+  iex> Day6.part2("....#.....\n.........#\n..........\n..#.......\n.......#..\n..........\n.#..^.....\n........#.\n#.........\n......#...\n")
+  6
+  """
+  def part2(input) do
+    board = parse(input)
+
+    for {pos, value} <- board, value != "#", value != "^", pos != :start do
+      Map.put(board, pos, "#")
+    end
+    |> Task.async_stream(fn board -> simulate(board) |> Stream.run() end,
+      on_timeout: :kill_task,
+      timeout: 1_000
+    )
+    |> Stream.filter(&match?({:exit, :timeout}, &1))
+    |> Enum.to_list()
+    |> Enum.count()
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Day6, <<70, 79, 82, 49, 0, 0, 19, ...>>, {:part2, 1}}
+```
+
+<!-- livebook:{"offset":2350,"stamp":{"token":"XCP.Xkfzuoumzenx0yuUm6Hu5-2Rm80JfLx3XPMgfrxYVw_M64y5pa-EjAQB4UTIW4UXzsJmVyr7I79NRc805oAyxs0VOa8axxJEgpA8_K3reuj6n9Raax6ORHZ72lHLlR1ODP4","version":2}} -->
