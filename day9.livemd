@@ -1,0 +1,165 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 9
+
+## Setup
+
+```elixir
+input =
+  System.fetch_env!("LB_AOC_DIR")
+  |> Path.join("data/day9.txt")
+  |> File.read!()
+
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+## Solve
+
+```elixir
+defmodule Day9 do
+  defp checksum(filesystem) do
+    for {current, position} <- Enum.with_index(filesystem), current != nil, reduce: 0 do
+      sum ->
+        sum + current * position
+    end
+  end
+
+  @doc ~S"""
+  iex> Day9.part1("2333133121414131402")
+  1928
+  """
+  def part1(input) do
+    fragmented =
+      Enum.flat_map(Enum.with_index(String.codepoints(input) |> Enum.chunk_every(2)), fn
+        {[files, "0"], index} ->
+          for _i <- 0..(String.to_integer(files) - 1) do
+            index
+          end
+
+        {[files, free], index} ->
+          files =
+            for _i <- 0..(String.to_integer(files) - 1) do
+              index
+            end
+
+          free =
+            for _i <- 0..max(0, String.to_integer(free) - 1) do
+              nil
+            end
+
+          files ++ free
+
+        {[files], index} ->
+          for _i <- 0..(String.to_integer(files) - 1) do
+            index
+          end
+      end)
+
+    len = length(fragmented)
+
+    fragmented
+    |> Enum.reverse()
+    |> Enum.with_index()
+    |> Enum.reduce_while(fragmented, fn
+      {nil, _index}, acc ->
+        {:cont, acc}
+
+      {block, index}, acc ->
+        first_empty = Enum.find_index(acc, &is_nil/1)
+
+        if first_empty >= len - index do
+          {:halt, acc}
+        else
+          {:cont,
+           acc
+           |> List.update_at(len - index - 1, fn ^block -> nil end)
+           |> List.update_at(first_empty, fn nil -> block end)}
+        end
+    end)
+    |> Enum.filter(& &1)
+    |> checksum()
+  end
+
+  @doc ~S"""
+  iex> Day9.part2("2333133121414131402")
+  2858
+  """
+  def part2(input) do
+    fragged =
+      Enum.flat_map(Enum.with_index(String.codepoints(input) |> Enum.chunk_every(2)), fn
+        {[files, "0"], index} ->
+          [{String.to_integer(files), index}]
+
+        {[files, free], index} ->
+          [{String.to_integer(files), index}, {String.to_integer(free), nil}]
+
+        {[files], index} ->
+          [{String.to_integer(files), index}]
+      end)
+
+    fragged
+    |> Enum.reverse()
+    |> Enum.reduce_while(fragged, fn
+      {_amount, nil}, acc ->
+        {:cont, acc}
+
+      {num, _position} = current, acc ->
+        case Enum.split_while(
+               acc,
+               fn
+                 {amount, nil} when amount >= num ->
+                   false
+
+                 _ ->
+                   true
+               end
+             ) do
+          {^acc, []} ->
+            {:cont, acc}
+
+          {head, [{num_nil, nil} | tail]} ->
+            target =
+              if num == num_nil, do: [], else: [{num_nil - num, nil}]
+
+            new_fragged =
+              head ++ [current] ++ target ++ tail
+
+            replace_index =
+              length(new_fragged) - Enum.find_index(Enum.reverse(new_fragged), &(&1 == current)) -
+                1
+
+            {:cont,
+             List.update_at(
+               new_fragged,
+               replace_index,
+               fn ^current ->
+                 {num, nil}
+               end
+             )
+             |> Enum.filter(& &1)}
+        end
+    end)
+    |> Enum.flat_map(fn
+      {amount, value} ->
+        for _i <- 0..(amount - 1) do
+          value
+        end
+    end)
+    |> checksum()
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Day9, <<70, 79, 82, 49, 0, 0, 28, ...>>, {:part2, 1}}
+```
+
+<!-- livebook:{"offset":3550,"stamp":{"token":"XCP.b81d6_4b-RfuObGZI2e1nFT13Rfle67i5EhsJvMgBSqS0JuD0fNiPFP_Pt3yPHsFD6QpDXJZ5uBWaCFTnIy_EDnPouWbp6_XinAm_Ef2BJxuRr2IUx_AZk2AeC7Msb3g2GQ","version":2}} -->
