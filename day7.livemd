@@ -102,4 +102,4 @@ end
 {:module, Day7, <<70, 79, 82, 49, 0, 0, 19, ...>>, {:part2, 1}}
 ```
 
-<!-- livebook:{"offset":2315,"stamp":{"token":"XCP.IEbtlMDSTsDndLuYXRmR_fpF3GpyrVvg5nohHFRJSVekz-eQHGICuIhDNzYP_jwIvBN-fq1kEn5TbHZ8fE_UTVRViDcAl31dy7IKGt7DONRMkH46Qhb8LSndu1-A8kV0h6U","version":2}} -->
+<!-- livebook:{"offset":2315,"stamp":{"token":"XCP.V5ieWu8sfyHbbhnlUt3WjFC-HfwbtqtRjXi30veWBUdHVVl2f49IwnqxgnV4QLuA2CRgAubJa1UDmFp0rmI7pmwqzAE2iHZlEXcN6cycOmlL9cXuarSruBlbFNNqnZGrgmM","version":2}} -->
