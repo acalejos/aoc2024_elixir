@@ -1,0 +1,135 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 10
+
+## Setup
+
+```elixir
+input =
+  System.fetch_env!("LB_AOC_DIR")
+  |> Path.join("data/day10.txt")
+  |> File.read!()
+
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+## Solve
+
+```elixir
+defmodule Day10 do
+  @directions [{0, 1}, {1, 0}, {-1, 0}, {0, -1}]
+
+  defp parse(input) do
+    for {row, i} <- Enum.with_index(String.split(input, "\n")),
+        row != "",
+        {item, j} <- Enum.with_index(String.codepoints(row)),
+        into: %{} do
+      {{i, j}, String.to_integer(item)}
+    end
+  end
+
+  defp trailheads(board) do
+    Enum.flat_map(board, fn
+      {k, 0} -> [k]
+      _ -> []
+    end)
+  end
+
+  defp score({i, j} = current, previous, board) do
+    cond do
+      is_nil(Map.get(board, current)) ->
+        nil
+
+      Map.get(board, current) == 9 and Map.get(board, previous) == 8 ->
+        current
+
+      Map.get(board, current) == Map.get(board, previous) + 1 ->
+        for {di, dj} <- @directions do
+          score({i + di, j + dj}, current, board)
+        end
+        |> List.flatten()
+        |> Enum.filter(& &1)
+
+      true ->
+        nil
+    end
+  end
+
+  defp rating({i, j} = current, previous, board) do
+    cond do
+      is_nil(Map.get(board, current)) ->
+        0
+
+      Map.get(board, current) == 9 and Map.get(board, previous) == 8 ->
+        1
+
+      Map.get(board, current) == Map.get(board, previous) + 1 ->
+        for {di, dj} <- @directions, reduce: 0 do
+          sum ->
+            sum + rating({i + di, j + dj}, current, board)
+        end
+
+      true ->
+        0
+    end
+  end
+
+  @doc ~S"""
+  iex> Day10.part1("89010123\n78121874\n87430965\n96549874\n45678903\n32019012\n01329801\n10456732\n")
+  36
+  """
+  def part1(input) do
+    board = parse(input)
+
+    trailheads = trailheads(board)
+
+    for {i, j} <- trailheads, {di, dj} <- @directions, reduce: %{} do
+      acc ->
+        case score({i + di, j + dj}, {i, j}, board) do
+          nil ->
+            acc
+
+          list ->
+            e = Map.get(acc, {i, j}, [])
+            Map.put(acc, {i, j}, e ++ list)
+        end
+    end
+    |> Enum.reduce(0, fn {_k, v}, sum ->
+      count =
+        Enum.uniq(v)
+        |> Enum.count()
+
+      sum + count
+    end)
+  end
+
+  @doc ~S"""
+  iex> Day10.part2("89010123\n78121874\n87430965\n96549874\n45678903\n32019012\n01329801\n10456732\n")
+  81
+  """
+  def part2(input) do
+    board = parse(input)
+
+    trailheads = trailheads(board)
+
+    for {i, j} <- trailheads, {di, dj} <- @directions, reduce: 0 do
+      sum ->
+        sum + rating({i + di, j + dj}, {i, j}, board)
+    end
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Day10, <<70, 79, 82, 49, 0, 0, 23, ...>>, {:part2, 1}}
+```
+
+<!-- livebook:{"offset":2693,"stamp":{"token":"XCP.2qRZFmjZ7xAsILZcudBbxTnnV-i9foqHyAgYTDRSmOwabhqyi_5Kuibw_C80sBb-tS08p8wCi6Fz5y23PNkWn_gBrVGRYgPwzbiRN3e0laEI6OVLN6oVQUa519P4R4wCX_Y","version":2}} -->
