@@ -1,0 +1,91 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 11
+
+```elixir
+Mix.install([
+  {:memoize, "~> 1.4"}
+])
+```
+
+## Setup
+
+```elixir
+input =
+  System.fetch_env!("LB_AOC_DIR")
+  |> Path.join("data/day11.txt")
+  |> File.read!()
+
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+## Solve
+
+```elixir
+defmodule Day11 do
+  use Memoize
+  def num_digits(stone) do
+    1 +
+      (stone
+       |> :math.log10()
+       |> :math.floor())
+  end
+
+  defmemo rule(stone, iteration) do
+    cond do
+      iteration == 0 ->
+        1
+
+      stone == 0 ->
+        rule(1, iteration - 1)
+
+      num_digits(stone) |> round() |> rem(2) == 0 ->
+        half_length = div(round(num_digits(stone)), 2)
+        divisor = :math.pow(10, half_length) |> trunc()
+
+        first_half = div(stone, divisor)
+        second_half = rem(stone, divisor)
+        rule(first_half, iteration - 1) + rule(second_half, iteration - 1)
+
+      true ->
+        rule(stone * 2024, iteration - 1)
+    end
+  end
+
+  defp run(stones, blinks) do
+    for stone <- stones, reduce: 0 do
+      sum ->
+        sum + rule(stone, blinks )
+    end
+  end
+
+  @doc ~S"""
+  iex> Day11.part1("125 17")
+  55312
+  """
+  def part1(input) do
+    stones = String.split(input) |> Enum.map(&String.to_integer/1)
+    run(stones, 25)
+  end
+
+
+  def part2(input) do
+    stones = String.split(input) |> Enum.map(&String.to_integer/1)
+    run(stones, 75)
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Day11, <<70, 79, 82, 49, 0, 0, 14, ...>>, {:part2, 1}}
+```
+
+<!-- livebook:{"offset":1503,"stamp":{"token":"XCP.rHnxaT0MCqw_sdSbMziH7Mlqyw6t5qosQVedfD3LCORLyFenHtPf50qCi3hbEv7SdcejK9SyAo42BPKCP3kOALP9tkkTIOuX6cJ1yAFlQnHInMLzmwBLHNlHupIwcVpkf3Y","version":2}} -->
