@@ -1,0 +1,145 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 12
+
+## Setup
+
+```elixir
+input =
+  System.fetch_env!("LB_AOC_DIR")
+  |> Path.join("data/day12.txt")
+  |> File.read!()
+
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+## Solve
+
+```elixir
+defmodule Day12 do
+  @directions [
+    {0, 1},
+    {0, -1},
+    {1, 0},
+    {-1, 0}
+  ]
+
+  def parse(input) do
+    for {row, i} <- Enum.with_index(String.split(input, "\n")),
+        row != "",
+        {item, j} <- Enum.with_index(String.codepoints(row)),
+        into: %{} do
+      {{i, j}, item}
+    end
+  end
+
+  def flood({i, j} = current, board, group) do
+    for {di, dj} <- @directions,
+        Map.get(board, current) == Map.get(board, {i + di, j + dj}),
+        !MapSet.member?(group, {i + di, j + dj}),
+        reduce: group do
+      acc ->
+        group = MapSet.put(acc, {i + di, j + dj})
+        flood({i + di, j + dj}, board, group)
+    end
+  end
+
+  defp perimeter(region, board) do
+    for {i, j} <- region, {di, dj} <- @directions, reduce: 0 do
+      sum ->
+        if Map.get(board, {i, j}) == Map.get(board, {i + di, j + dj}), do: sum, else: sum + 1
+    end
+  end
+
+  def sides(region, board) do
+    all_sides =
+      for {i, j} <- region, {di, dj} <- @directions, reduce: MapSet.new() do
+        s ->
+          if Map.get(board, {i, j}) == Map.get(board, {i + di, j + dj}) do
+            s
+          else
+            MapSet.put(s, {{i, j}, {di, dj}})
+          end
+      end
+
+    for {i, j} <- Map.keys(board),
+        MapSet.member?(region, {i, j}),
+        {{^i, ^j}, direction} <- MapSet.filter(all_sides, &match?({{^i, ^j}, _direction}, &1)),
+        reduce: 0 do
+      sum ->
+        case direction do
+          {-1, 0} ->
+            if MapSet.member?(all_sides, {{i, j - 1}, {-1, 0}}), do: sum, else: sum + 1
+
+          {1, 0} ->
+            if MapSet.member?(all_sides, {{i, j - 1}, {1, 0}}), do: sum, else: sum + 1
+
+          {0, -1} ->
+            if MapSet.member?(all_sides, {{i - 1, j}, {0, -1}}), do: sum, else: sum + 1
+
+          {0, 1} ->
+            if MapSet.member?(all_sides, {{i - 1, j}, {0, 1}}), do: sum, else: sum + 1
+        end
+    end
+  end
+
+  def regions(board) do
+    for space <- Map.keys(board), reduce: [] do
+      groups ->
+        if Enum.any?(groups, &MapSet.member?(&1, space)) do
+          groups
+        else
+          [flood(space, board, MapSet.new([space])) | groups]
+        end
+    end
+  end
+
+  @doc ~S"""
+  iex> Day12.part1("RRRRIICCFF\nRRRRIICCCF\nVVRRRCCFFF\nVVRCCCJFFF\nVVVVCJJCFE\nVVIVCCJJEE\nVVIIICJJEE\nMIIIIIJJEE\nMIIISIJEEE\nMMMISSJEEE\n")
+  1930
+  """
+  def part1(input) do
+    board =
+      parse(input)
+
+    regions(board)
+    |> Enum.reduce(
+      0,
+      fn region, sum ->
+        sum + Enum.count(region) * perimeter(region, board)
+      end
+    )
+  end
+
+  @doc ~S"""
+  iex> Day12.part2("RRRRIICCFF\nRRRRIICCCF\nVVRRRCCFFF\nVVRCCCJFFF\nVVVVCJJCFE\nVVIVCCJJEE\nVVIIICJJEE\nMIIIIIJJEE\nMIIISIJEEE\nMMMISSJEEE\n")
+  1206
+  """
+  def part2(input) do
+    board =
+      parse(input)
+
+    regions(board)
+    |> Enum.reduce(
+      0,
+      fn region, sum ->
+        sum + Enum.count(region) * sides(region, board)
+      end
+    )
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Day12, <<70, 79, 82, 49, 0, 0, 30, ...>>, {:part2, 1}}
+```
+
+<!-- livebook:{"offset":3266,"stamp":{"token":"XCP.wL45W7sgsH_P4_P9KFNPVqXN86WhNcL5GUAhRPl9Rk8TjwjdtucKpig_WhwMHNqMHE5KdbPzivy8VyuOaZAoc661pW9NcSxcf_AEKGl4WqroirTKQCrjupqSvc-a2PZtZOI","version":2}} -->
