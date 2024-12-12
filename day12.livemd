@@ -68,24 +68,14 @@ defmodule Day12 do
           end
       end
 
-    for {i, j} <- Map.keys(board),
-        MapSet.member?(region, {i, j}),
-        {{^i, ^j}, direction} <- MapSet.filter(all_sides, &match?({{^i, ^j}, _direction}, &1)),
+    for {i, j} <- region,
+        {{^i, ^j}, {di, dj} = direction} <-
+          MapSet.filter(all_sides, &match?({{^i, ^j}, _direction}, &1)),
         reduce: 0 do
       sum ->
-        case direction do
-          {-1, 0} ->
-            if MapSet.member?(all_sides, {{i, j - 1}, {-1, 0}}), do: sum, else: sum + 1
-
-          {1, 0} ->
-            if MapSet.member?(all_sides, {{i, j - 1}, {1, 0}}), do: sum, else: sum + 1
-
-          {0, -1} ->
-            if MapSet.member?(all_sides, {{i - 1, j}, {0, -1}}), do: sum, else: sum + 1
-
-          {0, 1} ->
-            if MapSet.member?(all_sides, {{i - 1, j}, {0, 1}}), do: sum, else: sum + 1
-        end
+        if MapSet.member?(all_sides, {{i - abs(dj), j - abs(di)}, direction}),
+          do: sum,
+          else: sum + 1
     end
   end
 
@@ -139,7 +129,7 @@ end
 <!-- livebook:{"output":true} -->
 
 ```
-{:module, Day12, <<70, 79, 82, 49, 0, 0, 30, ...>>, {:part2, 1}}
+{:module, Day12, <<70, 79, 82, 49, 0, 0, 27, ...>>, {:part2, 1}}
 ```
 
-<!-- livebook:{"offset":3266,"stamp":{"token":"XCP.wL45W7sgsH_P4_P9KFNPVqXN86WhNcL5GUAhRPl9Rk8TjwjdtucKpig_WhwMHNqMHE5KdbPzivy8VyuOaZAoc661pW9NcSxcf_AEKGl4WqroirTKQCrjupqSvc-a2PZtZOI","version":2}} -->
+<!-- livebook:{"offset":2887,"stamp":{"token":"XCP.V4r9Cj8Hss3NjEsG0Kv3rPkbNQvT88YxvZW5R46ayFhQ54W6wwVZcavnWN1B_-MGgtthy7WIVRLQu3fFs1JkDUtTg61HtIXuhtLxbQlDgYR_wHWchVUoN_1fWOQZjnBanJY","version":2}} -->
