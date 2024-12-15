@@ -1,0 +1,226 @@
+<!-- livebook:{"persist_outputs":true} -->
+
+# Day 13
+
+```elixir
+Mix.install([
+  {:pythonx, "~> 0.2.5"}
+])
+```
+
+## Setup
+
+```elixir
+input =
+  System.fetch_env!("LB_AOC_DIR")
+  |> Path.join("data/day13.txt")
+  |> File.read!()
+
+nil
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+nil
+```
+
+## Solve
+
+```elixir
+sample = """
+Button A: X+94, Y+34
+Button B: X+22, Y+67
+Prize: X=8400, Y=5400
+
+Button A: X+26, Y+66
+Button B: X+67, Y+21
+Prize: X=12748, Y=12176
+
+Button A: X+17, Y+86
+Button B: X+84, Y+37
+Prize: X=7870, Y=6450
+
+Button A: X+69, Y+23
+Button B: X+27, Y+71
+Prize: X=18641, Y=10279
+"""
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+"Button A: X+94, Y+34\nButton B: X+22, Y+67\nPrize: X=8400, Y=5400\n\nButton A: X+26, Y+66\nButton B: X+67, Y+21\nPrize: X=12748, Y=12176\n\nButton A: X+17, Y+86\nButton B: X+84, Y+37\nPrize: X=7870, Y=6450\n\nButton A: X+69, Y+23\nButton B: X+27, Y+71\nPrize: X=18641, Y=10279\n"
+```
+
+```elixir
+parse = fn input ->
+  for block <- String.split(input, "\n\n"), block != "" do
+    for part <- String.split(block, "\n"), part != "", reduce: %{} do
+      acc ->
+        [prefix, post] = String.split(part, ":")
+
+        case prefix do
+          "Prize" ->
+            [<<"X=", x::binary>>, <<"Y=", y::binary>>] =
+              String.split(post, ",") |> Enum.map(&String.trim/1)
+
+            acc
+            |> Map.put(:prize, {String.to_integer(x), String.to_integer(y)})
+
+          <<"Button ", button::binary>> ->
+            [<<"X+", x::binary>>, <<"Y+", y::binary>>] =
+              String.split(post, ",") |> Enum.map(&String.trim/1)
+
+            button = String.downcase(button)
+
+            acc
+            |> Map.put(String.to_atom(button), {String.to_integer(x), String.to_integer(y)})
+        end
+    end
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+#Function<42.39164016/1 in :erl_eval.expr/6>
+```
+
+```elixir
+parse.(sample)
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+[
+  %{b: {22, 67}, a: {94, 34}, prize: {8400, 5400}},
+  %{b: {67, 21}, a: {26, 66}, prize: {12748, 12176}},
+  %{b: {84, 37}, a: {17, 86}, prize: {7870, 6450}},
+  %{b: {27, 71}, a: {69, 23}, prize: {18641, 10279}}
+]
+```
+
+```elixir
+Pythonx.initialize_once("/Library/Frameworks/Python.framework/Versions/3.11/bin/python3")
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+:ok
+```
+
+```elixir
+import Pythonx
+pip! ["install", "-U", "scipy"]
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{%IO.Stream{device: :standard_io, raw: false, line_or_bytes: :line}, 134}
+```
+
+```elixir
+defmodule Day13 do
+  import Pythonx
+  pip! ["install", "-U", "scipy"]
+  def linsolve(%{a: {ax, ay}, b: {bx, by}, prize: {px, py}}) do
+    c = [3, 1]
+    a = [[ax, bx], [ay, by]]
+    b = [px, py]
+
+    pyeval(
+      """
+      from scipy.optimize import linprog
+      solution = linprog(
+              c,
+              A_eq=a,
+              b_eq=b,
+              integrality=1,
+              options={"autoscale": True, "presolve": False},
+      )
+      x = solution.x
+      # print(solution)
+      # if solution.success:
+      #   x = solution.x
+      # else:
+      #   x = []
+      """,
+      return: [:x]
+    )
+    x
+  end
+
+  @doc ~S"""
+  iex> Day13.part1("Button A: X+94, Y+34\nButton B: X+22, Y+67\nPrize: X=8400, Y=5400\n\nButton A: X+26, Y+66\nButton B: X+67, Y+21\nPrize: X=12748, Y=12176\n\nButton A: X+17, Y+86\nButton B: X+84, Y+37\nPrize: X=7870, Y=6450\n\nButton A: X+69, Y+23\nButton B: X+27, Y+71\nPrize: X=18641, Y=10279\n")
+  480
+  """
+  def part1(input) do
+    nil
+  end
+
+  @doc ~S"""
+  iex> Day13.part2("Button A: X+94, Y+34\nButton B: X+22, Y+67\nPrize: X=8400, Y=5400\n\nButton A: X+26, Y+66\nButton B: X+67, Y+21\nPrize: X=12748, Y=12176\n\nButton A: X+17, Y+86\nButton B: X+84, Y+37\nPrize: X=7870, Y=6450\n\nButton A: X+69, Y+23\nButton B: X+27, Y+71\nPrize: X=18641, Y=10279\n")
+  1206
+  """
+  def part2(input) do
+    nil
+  end
+end
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+warning: variable "a" is unused (if the variable is not meant to be used, prefix it with an underscore)
+└─ Documents/aoc2024/day13.livemd#cell:kdfsu4agkik32lgx:6: Day13.linsolve/1
+
+warning: variable "b" is unused (if the variable is not meant to be used, prefix it with an underscore)
+└─ Documents/aoc2024/day13.livemd#cell:kdfsu4agkik32lgx:7: Day13.linsolve/1
+
+warning: variable "c" is unused (if the variable is not meant to be used, prefix it with an underscore)
+└─ Documents/aoc2024/day13.livemd#cell:kdfsu4agkik32lgx:5: Day13.linsolve/1
+
+warning: variable "input" is unused (if the variable is not meant to be used, prefix it with an underscore)
+└─ Documents/aoc2024/day13.livemd#cell:kdfsu4agkik32lgx:35: Day13.part1/1
+
+warning: variable "input" is unused (if the variable is not meant to be used, prefix it with an underscore)
+└─ Documents/aoc2024/day13.livemd#cell:kdfsu4agkik32lgx:43: Day13.part2/1
+
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+{:module, Day13, <<70, 79, 82, 49, 0, 0, 10, ...>>, {:part2, 1}}
+```
+
+```elixir
+a = parse.(sample) |> hd
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+%{b: {22, 67}, a: {94, 34}, prize: {8400, 5400}}
+```
+
+```elixir
+Day13.linsolve(a)
+```
+
+```elixir
+pyinline("a = [i for i in range(10)]", return: [:a])
+```
+
+<!-- livebook:{"output":true} -->
+
+```
+[[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]]
+```
+
+<!-- livebook:{"offset":5225,"stamp":{"token":"XCP.6Q6gnEf0XNtSk7hz4D-1vuEw-_KLe27FsjHeg_M9asGu_Q6rHgrtjMEcuCpoYHhm1fsEXOARjKSbZ3w4zkI-2dj-nr3uUkfE1TqRUAQ10-8c6svcTe5bS7qdyWODBsBB1bs","version":2}} -->
